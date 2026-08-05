@@ -1,0 +1,1459 @@
+﻿Internet das Coisas III — Etapa 1: Dispositivo, Wi-Fi e MQTT
+INTERNET DAS COISAS III
+Apostila Prática — Etapa 1
+Dispositivo, conectividade Wi-Fi e comunicação MQTT
+
+
+
+Identificação
+	Preenchimento
+	Instituição
+	IFMG — Campus Ouro Branco
+	Curso
+	
+
+	Professor
+	Charles Tim Batista Garrocho
+	Estudante
+	
+
+	Turma
+	
+
+	Ano/Semestre
+	
+
+	
+
+Material para estudo dirigido e execução em laboratório
+________________
+
+
+Apresentação
+Esta apostila orienta a primeira etapa da disciplina Internet das Coisas III. O foco é a conectividade entre um dispositivo físico e serviços externos. O hardware será utilizado como plataforma experimental, mas não será objeto de ensino aprofundado nesta etapa.
+Ao longo de 12 encontros, cada estudante desenvolverá individualmente a primeira parte de seu projeto: um ESP32 conectado por Wi-Fi, capaz de publicar dados de um sensor e receber comandos para um atuador por meio do protocolo MQTT. As atividades foram organizadas para que o estudante avance por pequenas entregas verificáveis, evitando concentrar toda a implementação no final.
+Princípio da etapa
+	O circuito deve ser simples. A complexidade avaliada está na arquitetura, na conectividade, na definição dos tópicos, na estrutura das mensagens, na comunicação bidirecional e no tratamento de falhas.
+	
+
+Como utilizar esta apostila
+1. Realize a leitura indicada antes do encontro ou no início da aula.
+2. Execute os procedimentos na ordem apresentada e marque os pontos de verificação.
+3. Registre mensagens do monitor serial, capturas de tela e decisões do projeto no diário de laboratório.
+4. Não avance quando um ponto de verificação essencial não estiver funcionando.
+5. Solicite auxílio quando o erro persistir após a aplicação do roteiro de diagnóstico.
+6. Adapte os exemplos ao projeto individual somente depois de validar o exemplo-base.
+Orientações de acessibilidade e apoio ao NAPNEE
+Acessibilidade do material
+	As instruções são numeradas, os resultados esperados são descritos em texto, os códigos usam nomes claros e cada prática contém checklist. O estudante pode realizar primeiro o nível essencial e concluir os desafios intermediários ou avançados posteriormente, conforme orientação docente.
+	
+
+* Os diagramas possuem descrição textual e não dependem apenas de cores.
+* As atividades longas foram divididas em tarefas menores.
+* Os comandos e arquivos importantes aparecem em negrito.
+* Os códigos completos são apresentados antes das adaptações solicitadas.
+* Há alternativas de teste quando o hardware ou o broker estiverem temporariamente indisponíveis.
+* O professor poderá disponibilizar código-base parcialmente preenchido, tempo adicional, dupla de apoio para depuração ou demonstração oral, conforme o plano educacional individualizado.
+Sumário da apostila
+Seção
+	Conteúdo
+	1
+	Contextualização e objetivos
+	2
+	Organização dos 12 encontros
+	3
+	Arquitetura do projeto individual
+	4
+	Preparação do ambiente
+	5
+	Circuito-base
+	6
+	Conectividade Wi-Fi
+	7
+	Fundamentos aplicados de MQTT
+	8
+	Mensagens JSON e convenções
+	9
+	Publicação de telemetria
+	10
+	Assinatura e controle do atuador
+	11
+	Integração completa
+	12
+	Práticas guiadas
+	13
+	Estudos dirigidos e desafios
+	14
+	Depuração e tratamento de falhas
+	15
+	Segurança e boas práticas
+	16
+	Entrega da Etapa 1
+	17
+	Rubrica
+	18
+	Revisão para a prova
+	19
+	Glossário e referências
+	
+
+________________
+
+
+1. Contextualização e objetivos
+1.1 Situação-problema
+Considere um ambiente que precisa ser monitorado remotamente. Um sensor produz leituras periódicas e um atuador deve ser acionado mesmo quando o usuário não está próximo do equipamento. O dispositivo físico não pode depender de uma conexão direta com o navegador do usuário. Ele precisa trocar mensagens com uma infraestrutura intermediária disponível na rede.
+Nesta etapa, o ESP32 atua como dispositivo de borda. Ele se conecta a uma rede Wi-Fi e utiliza MQTT para publicar telemetria e receber comandos. O broker MQTT recebe, organiza e encaminha as mensagens. Nas etapas seguintes, um gateway em nuvem consumirá essas mensagens, persistirá dados e atenderá ao sistema web.
+1.2 Objetivo geral
+Implementar a conectividade de um dispositivo IoT baseado em ESP32, utilizando Wi-Fi e MQTT para comunicação bidirecional entre um sensor, um atuador e um broker acessível pela rede.
+1.3 Objetivos específicos
+* Representar a arquitetura inicial de uma solução IoT.
+* Configurar o ESP32 para conectar-se a uma rede Wi-Fi.
+* Diagnosticar endereço IP, intensidade do sinal e estado da conexão.
+* Implementar reconexão automática ao Wi-Fi.
+* Explicar o modelo publicação–assinatura do MQTT.
+* Definir tópicos coerentes para telemetria, comandos e estado.
+* Publicar mensagens estruturadas em JSON.
+* Assinar tópicos e processar comandos recebidos.
+* Acionar um atuador a partir de uma mensagem MQTT.
+* Testar perda e recuperação de conectividade.
+* Documentar decisões, testes e evidências do projeto individual.
+1.4 Competências desenvolvidas
+Competência
+	Evidência observável
+	Análise arquitetural
+	Diagrama com componentes, responsabilidades e fluxos.
+	Configuração de conectividade
+	ESP32 conectado e capaz de informar parâmetros da rede.
+	Comunicação distribuída
+	Publicação e assinatura em tópicos MQTT.
+	Diagnóstico
+	Uso do monitor serial, cliente MQTT e testes controlados.
+	Resiliência básica
+	Reconexão sem reinicialização manual.
+	Documentação técnica
+	Código organizado, tabela de tópicos e relatório de testes.
+	1.5 Conhecimentos prévios
+* Lógica de programação e funções em C/C++ para Arduino.
+* Noções de redes: endereço IP, porta, cliente, servidor e DNS.
+* Noções de sistemas distribuídos e troca de mensagens.
+* Montagem básica de circuitos simples em protoboard.
+* Uso básico da Arduino IDE ou de ambiente equivalente.
+2. Organização dos 12 encontros
+Enc.
+	Tema
+	Atividade principal
+	Evidência
+	1
+	Apresentação da disciplina e do projeto
+	Escolha inicial do problema e análise de uma solução IoT.
+	Ficha de proposta preliminar.
+	2
+	Arquitetura de IoT
+	Modelagem do dispositivo, broker, gateway, banco e web.
+	Diagrama inicial.
+	3
+	Sensor, atuador e fluxo de dados
+	Definição do projeto individual e dos eventos.
+	Requisitos funcionais mínimos.
+	4
+	Preparação do protótipo-base
+	Teste local do sensor e do atuador com código fornecido.
+	Circuito-base validado.
+	5
+	Conectividade Wi-Fi
+	Conexão do ESP32 à rede.
+	IP e estado da conexão registrados.
+	6
+	Diagnóstico de rede
+	RSSI, endereço, gateway e teste de perda.
+	Relatório breve de diagnóstico.
+	7
+	Reconexão automática
+	Implementação de rotina não bloqueante de recuperação.
+	Wi-Fi resiliente a falhas simples.
+	8
+	Fundamentos do MQTT
+	Teste com cliente de desktop e análise de tópicos.
+	Mapa de tópicos.
+	9
+	Conexão do ESP32 ao broker
+	Autenticação, clientId e mensagens de estado.
+	Cliente MQTT conectado.
+	10
+	Publicação de telemetria
+	Leitura e envio periódico em JSON.
+	Dados do sensor no tópico.
+	11
+	Assinatura e controle
+	Recepção de comando e acionamento do atuador.
+	Comunicação bidirecional.
+	12
+	Integração, revisão e prova
+	Demonstração do marco 1 e prova teórica.
+	Entrega da Etapa 1.
+	
+
+3. Arquitetura do projeto individual
+3.1 Arquitetura completa prevista para a disciplina
+Fluxo geral da solução
+Sensor → ESP32 → Wi-Fi → MQTT → Broker/Gateway em nuvem → Banco chave-valor → Sistema web → Usuário
+
+Usuário → Sistema web → Gateway → MQTT → ESP32 → Atuador
+	
+
+Na Etapa 1, o estudante implementará e validará o trecho entre o sensor/atuador e o broker MQTT. O gateway, o banco de dados e o sistema web serão construídos nas etapas posteriores, mas já devem aparecer no diagrama para que as decisões atuais permaneçam compatíveis com a arquitetura completa.
+3.2 Responsabilidades dos componentes
+Componente
+	Responsabilidade nesta etapa
+	Sensor
+	Gerar uma grandeza ou evento de entrada.
+	Atuador
+	Representar uma ação física comandável.
+	ESP32
+	Ler o sensor, manter conectividade, publicar telemetria e processar comandos.
+	Wi-Fi
+	Fornecer acesso à rede IP.
+	Broker MQTT
+	Receber publicações e encaminhá-las aos assinantes.
+	Cliente MQTT de teste
+	Permitir inspeção e envio manual de mensagens.
+	Gateway futuro
+	Consumir telemetria, persistir dados e publicar comandos.
+	
+
+3.3 Requisitos mínimos do projeto
+☐ Um ESP32 ou placa equivalente aprovada pelo professor.
+☐ Um sensor simples, com leitura digital ou analógica.
+☐ Um atuador simples e seguro, preferencialmente LED, buzzer ou servo de baixa potência.
+☐ Conexão Wi-Fi com recuperação após falha temporária.
+☐ Publicação MQTT de telemetria.
+☐ Assinatura MQTT para comando do atuador.
+☐ Mensagens em JSON para telemetria.
+☐ Tópicos identificados por turma, estudante e dispositivo.
+☐ Monitor serial com mensagens de diagnóstico.
+☐ Diagrama e documentação do fluxo.
+4. Preparação do ambiente
+4.1 Hardware e software
+Item
+	Finalidade
+	Observação
+	ESP32 DevKit
+	Processamento e conectividade Wi-Fi.
+	Utilizar a placa disponível no laboratório.
+	Sensor
+	Fonte de telemetria.
+	Ex.: LDR, DHT11/DHT22, botão, sensor de presença.
+	Atuador
+	Resposta a comando.
+	Ex.: LED, buzzer ou servo.
+	Protoboard e jumpers
+	Montagem do circuito-base.
+	Não será avaliada sofisticação eletrônica.
+	Arduino IDE
+	Compilação e upload.
+	Pode ser substituída por ambiente equivalente aprovado.
+	PubSubClient
+	Cliente MQTT para ESP32.
+	Instalar pelo gerenciador de bibliotecas.
+	ArduinoJson
+	Montagem e interpretação de JSON.
+	Instalar pelo gerenciador de bibliotecas.
+	Cliente MQTT de desktop
+	Inspeção manual de tópicos.
+	MQTT Explorer ou equivalente.
+	4.2 Instalação das bibliotecas
+7. Abra a Arduino IDE.
+8. Acesse o gerenciador de bibliotecas.
+9. Pesquise por PubSubClient e instale a versão estável disponível.
+10. Pesquise por ArduinoJson e instale a versão estável disponível.
+11. Verifique se o pacote de placas ESP32 está instalado.
+12. Selecione a placa e a porta serial corretas.
+13. Compile um exemplo simples antes de iniciar a prática.
+Atenção
+	Não atualize bibliotecas durante uma aula avaliativa sem orientação. Mudanças de versão podem alterar APIs e dificultar a comparação com os códigos da apostila.
+	
+
+4.3 Organização de arquivos
+Estrutura recomendada
+projeto_iot_etapa1/
+├── projeto_iot_etapa1.ino
+├── secrets.h
+├── README.md
+├── docs/
+│   ├── arquitetura.png
+│   ├── topicos.md
+│   └── testes.md
+└── evidencias/
+    ├── wifi_conectado.png
+    ├── mqtt_publicacao.png
+    └── mqtt_comando.png
+	
+
+4.4 Arquivo de credenciais
+Arquivo secrets.h
+#ifndef SECRETS_H
+#define SECRETS_H
+
+const char* WIFI_SSID = "NOME_DA_REDE";
+const char* WIFI_PASSWORD = "SENHA_DA_REDE";
+
+const char* MQTT_HOST = "ENDERECO_DO_BROKER";
+const int MQTT_PORT = 1883;
+const char* MQTT_USERNAME = "USUARIO_FORNECIDO";
+const char* MQTT_PASSWORD = "SENHA_FORNECIDA";
+
+#endif
+	
+
+Boas práticas
+	Não publique o arquivo secrets.h em repositórios públicos. Em repositórios Git, inclua esse arquivo no .gitignore e forneça um modelo chamado secrets.example.h sem credenciais reais.
+	
+
+5. Circuito-base
+5.1 Proposta padronizada
+Para os exemplos desta apostila, será utilizado um potenciômetro ou LDR como sensor analógico e um LED como atuador. O professor poderá substituir o sensor conforme a disponibilidade. A lógica de conectividade permanece a mesma.
+Componente
+	Pino no ESP32
+	Descrição
+	Saída do sensor analógico
+	GPIO 34
+	Entrada analógica; não fornece saída.
+	LED
+	GPIO 2
+	Atuador de demonstração.
+	Resistor do LED
+	Em série com o LED
+	Limita a corrente.
+	GND
+	GND
+	Referência elétrica comum.
+	Alimentação do sensor
+	3,3 V
+	Verificar compatibilidade do componente.
+	
+
+Segurança elétrica
+	Não conecte motores, bombas, relés de potência ou cargas externas diretamente aos pinos do ESP32. Nesta etapa, use atuadores de baixa potência ou simule cargas maiores com LED.
+	
+
+5.2 Código de teste local
+Teste local de sensor e atuador
+const int SENSOR_PIN = 34;
+const int ACTUATOR_PIN = 2;
+
+void setup() {
+  Serial.begin(115200);
+  pinMode(ACTUATOR_PIN, OUTPUT);
+  digitalWrite(ACTUATOR_PIN, LOW);
+}
+
+void loop() {
+  int sensorValue = analogRead(SENSOR_PIN);
+  Serial.print("Valor do sensor: ");
+  Serial.println(sensorValue);
+
+  bool activate = sensorValue > 2000;
+  digitalWrite(ACTUATOR_PIN, activate ? HIGH : LOW);
+
+  delay(1000);
+}
+	
+
+Resultado esperado
+	O monitor serial deve exibir uma leitura por segundo. Ao ultrapassar o limite configurado, o LED deve mudar de estado. Ajuste o limite somente depois de observar a faixa de valores do sensor.
+	
+
+6. Conectividade Wi-Fi
+6.1 Revisão aplicada
+O Wi-Fi fornece acesso à rede IP, mas não garante que o broker MQTT esteja disponível. É importante separar três estados: o dispositivo pode estar ligado, conectado ao ponto de acesso e, ainda assim, desconectado do serviço MQTT. O código deve observar essas camadas separadamente.
+Indicador
+	Pergunta de diagnóstico
+	WiFi.status()
+	O ESP32 está associado à rede?
+	WiFi.localIP()
+	Qual endereço IP foi atribuído?
+	WiFi.gatewayIP()
+	Qual gateway permite acesso a outras redes?
+	WiFi.RSSI()
+	Qual a intensidade aproximada do sinal?
+	mqttClient.connected()
+	A sessão com o broker está ativa?
+	6.2 Exemplo completo de conexão
+Conexão Wi-Fi com tentativas periódicas
+#include <WiFi.h>
+#include "secrets.h"
+
+const unsigned long WIFI_RETRY_INTERVAL_MS = 5000;
+unsigned long lastWifiAttempt = 0;
+
+void printNetworkInformation() {
+  Serial.print("IP local: ");
+  Serial.println(WiFi.localIP());
+
+  Serial.print("Gateway: ");
+  Serial.println(WiFi.gatewayIP());
+
+  Serial.print("Sinal (RSSI): ");
+  Serial.print(WiFi.RSSI());
+  Serial.println(" dBm");
+}
+
+void startWifiConnection() {
+  Serial.print("Conectando à rede ");
+  Serial.println(WIFI_SSID);
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+  lastWifiAttempt = millis();
+}
+
+void maintainWifiConnection() {
+  if (WiFi.status() == WL_CONNECTED) {
+    return;
+  }
+
+  unsigned long now = millis();
+  if (now - lastWifiAttempt >= WIFI_RETRY_INTERVAL_MS) {
+    Serial.println("Wi-Fi desconectado. Nova tentativa...");
+    WiFi.disconnect();
+    WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+    lastWifiAttempt = now;
+  }
+}
+
+void setup() {
+  Serial.begin(115200);
+  startWifiConnection();
+}
+
+void loop() {
+  maintainWifiConnection();
+
+  static bool informationPrinted = false;
+  if (WiFi.status() == WL_CONNECTED && !informationPrinted) {
+    Serial.println("Wi-Fi conectado.");
+    printNetworkInformation();
+    informationPrinted = true;
+  }
+
+  if (WiFi.status() != WL_CONNECTED) {
+    informationPrinted = false;
+  }
+}
+	
+
+6.3 Interpretação do RSSI
+Faixa aproximada
+	Interpretação prática
+	Acima de -50 dBm
+	Sinal muito forte.
+	-50 a -67 dBm
+	Sinal geralmente adequado.
+	-67 a -75 dBm
+	Pode haver instabilidade dependendo do ambiente.
+	Abaixo de -75 dBm
+	Sinal fraco; reposicione o dispositivo ou ponto de acesso.
+	
+
+Observação
+	RSSI é um indicador aproximado. Barreiras, interferência, lotação da rede e qualidade do ponto de acesso também influenciam a comunicação.
+	
+
+7. Fundamentos aplicados de MQTT
+7.1 Modelo publicação–assinatura
+MQTT é um protocolo leve de mensageria baseado em publicação e assinatura. Os clientes não precisam conhecer diretamente o endereço uns dos outros. Todos se conectam ao broker. Um cliente publica uma mensagem em um tópico, e o broker entrega essa mensagem aos clientes que assinam o mesmo tópico.
+Fluxo MQTT bidirecional
+ESP32 (publisher) ── publica ──► broker ── encaminha ──► gateway (subscriber)
+
+Sistema web/gateway (publisher) ── publica comando ──► broker ── encaminha ──► ESP32 (subscriber)
+	
+
+7.2 Conceitos essenciais
+Conceito
+	Definição aplicada
+	Broker
+	Servidor responsável por receber e encaminhar mensagens.
+	Cliente
+	Aplicação ou dispositivo conectado ao broker.
+	Tópico
+	Nome hierárquico que identifica um fluxo de mensagens.
+	Publicação
+	Envio de uma mensagem a um tópico.
+	Assinatura
+	Registro de interesse em receber mensagens de um tópico.
+	Payload
+	Conteúdo da mensagem.
+	Client ID
+	Identificador da sessão do cliente.
+	QoS
+	Nível de garantia de entrega.
+	Retained message
+	Última mensagem que o broker pode guardar para novos assinantes.
+	Last Will
+	Mensagem preparada para indicar desconexão inesperada.
+	
+
+
+
+
+
+7.3 Convenção de tópicos
+Modelo de tópicos
+ifmg/iot3/<turma>/<aluno>/<dispositivo>/telemetry
+ifmg/iot3/<turma>/<aluno>/<dispositivo>/command
+ifmg/iot3/<turma>/<aluno>/<dispositivo>/state
+ifmg/iot3/<turma>/<aluno>/<dispositivo>/availability
+	
+
+Tópico
+	Direção
+	Finalidade
+	.../telemetry
+	ESP32 → broker
+	Leituras periódicas do sensor.
+	.../command
+	Gateway → ESP32
+	Comandos para o atuador.
+	.../state
+	ESP32 → broker
+	Estado confirmado do atuador/dispositivo.
+	.../availability
+	ESP32 → broker
+	Indicação online/offline.
+	
+
+7.4 QoS em linguagem prática
+QoS
+	Interpretação
+	Uso sugerido na etapa
+	0
+	Entrega por melhor esforço. Pode haver perda.
+	Telemetria frequente e não crítica.
+	1
+	A mensagem é reenviada até haver confirmação; pode haver duplicata.
+	Comandos ou eventos relevantes.
+	2
+	Entrega exatamente uma vez, com maior custo.
+	Não obrigatório nesta etapa.
+	
+
+8. Mensagens JSON e convenções
+8.1 Estrutura recomendada
+Exemplo de telemetria
+{
+  "deviceId": "charles01",
+  "sensor": "luminosidade",
+  "value": 1875,
+  "unit": "raw",
+  "sequence": 42,
+  "uptimeMs": 128500
+}
+	
+
+Nesta etapa, o timestamp oficial poderá ser acrescentado pelo gateway nas etapas seguintes. O ESP32 registra uptime e sequência para permitir análise básica de ordem e reinicialização, sem depender de relógio em tempo real.
+8.2 Mensagem de comando
+Exemplo de comando
+{
+  "action": "set",
+  "target": "led",
+  "value": true,
+  "requestId": "cmd-2026-001"
+}
+	8.3 Mensagem de estado confirmado
+Exemplo de confirmação do atuador
+{
+  "deviceId": "charles01",
+  "actuator": "led",
+  "state": true,
+  "requestId": "cmd-2026-001"
+}
+	
+
+Por que confirmar o estado?
+	A publicação do comando não prova que o atuador foi acionado. O dispositivo deve processar o comando e publicar o estado resultante. Essa confirmação será importante para o sistema web nas etapas seguintes.
+	
+
+9. Conexão e publicação MQTT
+9.1 Configuração do cliente
+Conexão MQTT com Last Will
+#include <WiFi.h>
+#include <PubSubClient.h>
+#include "secrets.h"
+
+WiFiClient networkClient;
+PubSubClient mqttClient(networkClient);
+
+const char* DEVICE_ID = "aluno01";
+const char* TOPIC_AVAILABILITY =
+  "ifmg/iot3/turmaA/aluno01/esp32/availability";
+
+unsigned long lastMqttAttempt = 0;
+const unsigned long MQTT_RETRY_INTERVAL_MS = 5000;
+
+void connectMqtt() {
+  if (WiFi.status() != WL_CONNECTED || mqttClient.connected()) {
+    return;
+  }
+
+  unsigned long now = millis();
+  if (now - lastMqttAttempt < MQTT_RETRY_INTERVAL_MS) {
+    return;
+  }
+  lastMqttAttempt = now;
+
+  Serial.print("Conectando ao broker MQTT...");
+
+  bool connected = mqttClient.connect(
+    DEVICE_ID,
+    MQTT_USERNAME,
+    MQTT_PASSWORD,
+    TOPIC_AVAILABILITY,
+    1,
+    true,
+    "offline"
+  );
+
+  if (connected) {
+    Serial.println(" conectado.");
+    mqttClient.publish(TOPIC_AVAILABILITY, "online", true);
+  } else {
+    Serial.print(" falhou. Estado: ");
+    Serial.println(mqttClient.state());
+  }
+}
+
+void setupMqtt() {
+  mqttClient.setServer(MQTT_HOST, MQTT_PORT);
+  mqttClient.setBufferSize(512);
+}
+
+void maintainMqtt() {
+  connectMqtt();
+  if (mqttClient.connected()) {
+    mqttClient.loop();
+  }
+}
+	
+
+
+
+
+
+9.2 Publicação periódica de telemetria
+Função de publicação
+#include <ArduinoJson.h>
+
+const int SENSOR_PIN = 34;
+const char* TOPIC_TELEMETRY =
+  "ifmg/iot3/turmaA/aluno01/esp32/telemetry";
+
+unsigned long lastTelemetry = 0;
+const unsigned long TELEMETRY_INTERVAL_MS = 5000;
+unsigned long sequenceNumber = 0;
+
+void publishTelemetry() {
+  if (!mqttClient.connected()) {
+    return;
+  }
+
+  unsigned long now = millis();
+  if (now - lastTelemetry < TELEMETRY_INTERVAL_MS) {
+    return;
+  }
+  lastTelemetry = now;
+
+  int sensorValue = analogRead(SENSOR_PIN);
+
+  JsonDocument document;
+  document["deviceId"] = DEVICE_ID;
+  document["sensor"] = "analogico";
+  document["value"] = sensorValue;
+  document["unit"] = "raw";
+  document["sequence"] = sequenceNumber++;
+  document["uptimeMs"] = now;
+
+  char payload[256];
+  size_t length = serializeJson(document, payload, sizeof(payload));
+
+  bool published = mqttClient.publish(
+    TOPIC_TELEMETRY,
+    payload,
+    length,
+    false
+  );
+
+  Serial.print("Telemetria: ");
+  Serial.print(payload);
+  Serial.println(published ? " [enviada]" : " [falhou]");
+}
+	
+
+
+
+
+
+
+
+
+
+10. Assinatura e controle do atuador
+10.1 Callback de mensagens
+Recepção e processamento de comando
+const int ACTUATOR_PIN = 2;
+const char* TOPIC_COMMAND =
+  "ifmg/iot3/turmaA/aluno01/esp32/command";
+const char* TOPIC_STATE =
+  "ifmg/iot3/turmaA/aluno01/esp32/state";
+
+void publishActuatorState(bool state, const char* requestId) {
+  JsonDocument response;
+  response["deviceId"] = DEVICE_ID;
+  response["actuator"] = "led";
+  response["state"] = state;
+  response["requestId"] = requestId;
+
+  char payload[192];
+  serializeJson(response, payload, sizeof(payload));
+  mqttClient.publish(TOPIC_STATE, payload, true);
+}
+
+void onMqttMessage(char* topic, byte* payload, unsigned int length) {
+  Serial.print("Mensagem em ");
+  Serial.println(topic);
+
+  JsonDocument command;
+  DeserializationError error = deserializeJson(command, payload, length);
+
+  if (error) {
+    Serial.print("JSON inválido: ");
+    Serial.println(error.c_str());
+    return;
+  }
+
+  const char* action = command["action"] | "";
+  const char* target = command["target"] | "";
+  const char* requestId = command["requestId"] | "sem-id";
+
+  if (strcmp(action, "set") != 0 || strcmp(target, "led") != 0) {
+    Serial.println("Comando não suportado.");
+    return;
+  }
+
+  bool newState = command["value"] | false;
+  digitalWrite(ACTUATOR_PIN, newState ? HIGH : LOW);
+  publishActuatorState(newState, requestId);
+}
+
+void subscribeToTopics() {
+  bool subscribed = mqttClient.subscribe(TOPIC_COMMAND, 1);
+  Serial.println(subscribed
+    ? "Assinatura realizada."
+    : "Falha ao assinar tópico.");
+}
+	
+
+
+
+10.2 Pontos de atenção
+* O callback deve executar rapidamente. Evite delay e operações longas dentro dele.
+* Valide o JSON antes de acessar os campos.
+* Não aceite qualquer alvo ou ação sem verificação.
+* Publique o estado confirmado após alterar o atuador.
+* Use requestId para relacionar comando e confirmação.
+* Reassine os tópicos sempre que a conexão MQTT for restabelecida.
+11. Código integrado da Etapa 1
+O programa a seguir reúne Wi-Fi, MQTT, JSON, telemetria, comando e reconexão. Antes de usar, ajuste os tópicos, o DEVICE_ID e os pinos. Valide cada parte separadamente antes da integração.
+Programa integrado
+#include <WiFi.h>
+#include <PubSubClient.h>
+#include <ArduinoJson.h>
+#include "secrets.h"
+
+const int SENSOR_PIN = 34;
+const int ACTUATOR_PIN = 2;
+
+const char* DEVICE_ID = "aluno01";
+const char* TOPIC_TELEMETRY = "ifmg/iot3/turmaA/aluno01/esp32/telemetry";
+const char* TOPIC_COMMAND = "ifmg/iot3/turmaA/aluno01/esp32/command";
+const char* TOPIC_STATE = "ifmg/iot3/turmaA/aluno01/esp32/state";
+const char* TOPIC_AVAILABILITY = "ifmg/iot3/turmaA/aluno01/esp32/availability";
+
+WiFiClient networkClient;
+PubSubClient mqttClient(networkClient);
+
+const unsigned long WIFI_RETRY_MS = 5000;
+const unsigned long MQTT_RETRY_MS = 5000;
+const unsigned long TELEMETRY_INTERVAL_MS = 5000;
+
+unsigned long lastWifiAttempt = 0;
+unsigned long lastMqttAttempt = 0;
+unsigned long lastTelemetry = 0;
+unsigned long sequenceNumber = 0;
+
+void publishActuatorState(bool state, const char* requestId) {
+  JsonDocument response;
+  response["deviceId"] = DEVICE_ID;
+  response["actuator"] = "led";
+  response["state"] = state;
+  response["requestId"] = requestId;
+
+  char payload[192];
+  size_t length = serializeJson(response, payload, sizeof(payload));
+  mqttClient.publish(TOPIC_STATE, payload, length, true);
+}
+
+void onMqttMessage(char* topic, byte* payload, unsigned int length) {
+  JsonDocument command;
+  DeserializationError error = deserializeJson(command, payload, length);
+
+  if (error) {
+    Serial.print("JSON inválido: ");
+    Serial.println(error.c_str());
+    return;
+  }
+
+  const char* action = command["action"] | "";
+  const char* target = command["target"] | "";
+  const char* requestId = command["requestId"] | "sem-id";
+
+  if (strcmp(action, "set") != 0 || strcmp(target, "led") != 0) {
+    Serial.println("Comando não suportado.");
+    return;
+  }
+
+  bool newState = command["value"] | false;
+  digitalWrite(ACTUATOR_PIN, newState ? HIGH : LOW);
+  publishActuatorState(newState, requestId);
+}
+
+void startWifi() {
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+  lastWifiAttempt = millis();
+  Serial.println("Iniciando conexão Wi-Fi...");
+}
+
+void maintainWifi() {
+  if (WiFi.status() == WL_CONNECTED) {
+    return;
+  }
+
+  unsigned long now = millis();
+  if (now - lastWifiAttempt >= WIFI_RETRY_MS) {
+    Serial.println("Tentando reconectar ao Wi-Fi...");
+    WiFi.disconnect();
+    WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+    lastWifiAttempt = now;
+  }
+}
+
+void connectMqtt() {
+  if (WiFi.status() != WL_CONNECTED || mqttClient.connected()) {
+    return;
+  }
+
+  unsigned long now = millis();
+  if (now - lastMqttAttempt < MQTT_RETRY_MS) {
+    return;
+  }
+  lastMqttAttempt = now;
+
+  bool connected = mqttClient.connect(
+    DEVICE_ID,
+    MQTT_USERNAME,
+    MQTT_PASSWORD,
+    TOPIC_AVAILABILITY,
+    1,
+    true,
+    "offline"
+  );
+
+  if (connected) {
+    Serial.println("MQTT conectado.");
+    mqttClient.publish(TOPIC_AVAILABILITY, "online", true);
+    mqttClient.subscribe(TOPIC_COMMAND, 1);
+    publishActuatorState(digitalRead(ACTUATOR_PIN) == HIGH, "startup");
+  } else {
+    Serial.print("Falha MQTT. Código: ");
+    Serial.println(mqttClient.state());
+  }
+}
+
+void publishTelemetry() {
+  if (!mqttClient.connected()) {
+    return;
+  }
+
+  unsigned long now = millis();
+  if (now - lastTelemetry < TELEMETRY_INTERVAL_MS) {
+    return;
+  }
+  lastTelemetry = now;
+
+  JsonDocument telemetry;
+  telemetry["deviceId"] = DEVICE_ID;
+  telemetry["sensor"] = "analogico";
+  telemetry["value"] = analogRead(SENSOR_PIN);
+  telemetry["unit"] = "raw";
+  telemetry["sequence"] = sequenceNumber++;
+  telemetry["uptimeMs"] = now;
+  telemetry["wifiRssi"] = WiFi.RSSI();
+
+  char payload[256];
+  size_t length = serializeJson(telemetry, payload, sizeof(payload));
+
+  bool ok = mqttClient.publish(TOPIC_TELEMETRY, payload, length, false);
+  Serial.print(ok ? "Publicado: " : "Falha ao publicar: ");
+  Serial.println(payload);
+}
+
+void setup() {
+  Serial.begin(115200);
+  pinMode(ACTUATOR_PIN, OUTPUT);
+  digitalWrite(ACTUATOR_PIN, LOW);
+
+  mqttClient.setServer(MQTT_HOST, MQTT_PORT);
+  mqttClient.setCallback(onMqttMessage);
+  mqttClient.setBufferSize(512);
+
+  startWifi();
+}
+
+void loop() {
+  maintainWifi();
+  connectMqtt();
+
+  if (mqttClient.connected()) {
+    mqttClient.loop();
+    publishTelemetry();
+  }
+}
+	11.1 Sequência de testes do programa integrado
+14. Compile o programa sem conectar o circuito e corrija erros de sintaxe.
+15. Conecte o ESP32 e observe as mensagens do Wi-Fi.
+16. Confirme o endereço IP e o RSSI.
+17. Abra o cliente MQTT e assine o tópico de telemetria.
+18. Verifique se uma mensagem JSON chega no intervalo configurado.
+19. Assine o tópico de estado.
+20. Publique um comando válido no tópico de command.
+21. Verifique a alteração do LED e a mensagem de confirmação.
+22. Desligue temporariamente o Wi-Fi e observe o comportamento.
+23. Restaure a rede e confirme a reconexão e a reassinatura.
+12. Atividades práticas guiadas
+12.1 Prática 1 — Proposta e arquitetura
+Duração estimada: 2 encontros. Produto: proposta individual e diagrama inicial.
+24. Escolha um problema que possa ser representado por um sensor e um atuador simples.
+25. Descreva o usuário e a necessidade atendida.
+26. Defina a grandeza ou evento observado pelo sensor.
+27. Defina a ação executada pelo atuador.
+28. Desenhe o fluxo da telemetria até o sistema web futuro.
+29. Desenhe o fluxo do comando do usuário até o atuador.
+30. Liste os quatro tópicos MQTT do projeto.
+31. Submeta a proposta para validação antes de comprar componentes.
+☐ Problema delimitado.
+☐ Sensor e atuador compatíveis.
+☐ Arquitetura completa representada.
+☐ Fluxo bidirecional descrito.
+☐ Tópicos definidos.
+12.2 Prática 2 — Wi-Fi e diagnóstico
+Duração estimada: 3 encontros. Produto: ESP32 conectado com registro de diagnóstico e reconexão.
+32. Execute o código de conexão Wi-Fi.
+33. Registre IP, gateway e RSSI.
+34. Afaste o dispositivo do ponto de acesso e compare o RSSI.
+35. Interrompa a rede por pelo menos 30 segundos.
+36. Restaure a rede e verifique se o dispositivo se reconecta sem reset manual.
+37. Registre o tempo aproximado de recuperação.
+38. Explique por que delay longo prejudica a capacidade de recuperação.
+Ponto de verificação
+	O ESP32 deve recuperar a conexão automaticamente. Caso apenas volte a funcionar após pressionar reset, a prática ainda não foi concluída.
+	
+
+12.3 Prática 3 — Exploração do broker
+Duração estimada: 1 encontro. Produto: mapa de tópicos e testes com cliente MQTT.
+39. Conecte um cliente de desktop ao broker fornecido pelo professor.
+40. Assine um tópico exclusivo do estudante.
+41. Publique mensagens de texto simples.
+42. Teste um tópico hierárquico e observe a separação por barra.
+43. Teste um curinga de nível único (+) e um curinga multinível (#), apenas no cliente de observação.
+44. Documente quais mensagens cada assinatura recebe.
+45. Compare mensagem retida e mensagem não retida.
+12.4 Prática 4 — Telemetria MQTT
+Duração estimada: 2 encontros. Produto: sensor publicando JSON de forma periódica.
+46. Valide a leitura local do sensor.
+47. Conecte o ESP32 ao broker.
+48. Publique inicialmente uma mensagem fixa.
+49. Substitua a mensagem fixa por JSON.
+50. Acrescente sequência, uptime e RSSI.
+51. Verifique se o intervalo de publicação permanece estável.
+52. Altere temporariamente um campo para observar o impacto no consumidor.
+12.5 Prática 5 — Controle remoto e integração
+Duração estimada: 2 encontros. Produto: atuador controlado por comando JSON e estado confirmado.
+53. Assine o tópico de command no ESP32.
+54. Envie um comando válido pelo cliente MQTT.
+55. Confirme o acionamento do atuador.
+56. Publique o estado confirmado no tópico de state.
+57. Envie JSON inválido e observe o tratamento.
+58. Envie comando com target desconhecido e confirme que ele é rejeitado.
+59. Teste perda e recuperação da conexão MQTT.
+60. Produza um vídeo curto ou demonstração presencial do fluxo completo.
+13. Estudos dirigidos e desafios
+13.1 Leituras e pesquisas orientadas
+Tema
+	Questões orientadoras
+	Arquiteturas IoT
+	Qual a diferença entre dispositivo, broker, gateway e aplicação?
+	Wi-Fi em dispositivos embarcados
+	Quais fatores causam desconexões e como detectá-las?
+	Publicação–assinatura
+	Como o desacoplamento difere de uma chamada direta cliente-servidor?
+	MQTT QoS
+	Qual garantia é oferecida por cada nível e qual o custo?
+	Retained e Last Will
+	Como esses recursos ajudam a representar disponibilidade e estado?
+	JSON
+	Quais campos devem ser obrigatórios e quais podem ser opcionais?
+	
+
+13.2 Questões de fixação
+1. Explique por que estar conectado ao Wi-Fi não significa estar conectado ao broker.
+2. Descreva o papel do broker no modelo MQTT.
+3. Qual é o problema de todos os estudantes utilizarem o mesmo clientId?
+4. Diferencie tópico, payload e assinatura.
+5. Por que o ESP32 deve publicar o estado confirmado do atuador?
+6. Qual a vantagem de incluir um número de sequência na telemetria?
+7. Em que situação uma mensagem retained pode ser útil?
+8. Por que credenciais não devem permanecer no arquivo principal?
+9. Qual o impacto de usar delay(30000) em um código que precisa manter MQTT?
+10. Como o Last Will pode indicar falha inesperada?
+
+
+13.3 Desafios progressivos
+Nível
+	Desafio
+	Obrigatoriedade
+	Essencial
+	Publicar telemetria e controlar o atuador com reconexão básica.
+	Obrigatório.
+	Intermediário
+	Adicionar availability, retained, requestId e confirmação de estado.
+	Recomendado.
+	Avançado
+	Usar TLS, backoff progressivo, fila local curta ou múltiplos sensores.
+	Opcional, com validação docente.
+	
+
+
+
+14. Depuração e tratamento de falhas
+Sintoma
+	Causa provável
+	Diagnóstico e ação
+	ESP32 não conecta ao Wi-Fi
+	SSID/senha incorretos ou rede incompatível.
+	Confira secrets.h, frequência suportada e mensagens do monitor serial.
+	IP permanece 0.0.0.0
+	Associação ou DHCP não concluído.
+	Aguarde, verifique a rede e teste outro ponto de acesso autorizado.
+	RSSI muito baixo
+	Distância, obstáculos ou interferência.
+	Reposicione o dispositivo e compare valores.
+	MQTT state negativo
+	Host, porta, credenciais ou política do broker.
+	Registre mqttClient.state() e valide os dados no cliente de desktop.
+	Conecta e cai repetidamente
+	ClientId duplicado.
+	Use identificador exclusivo.
+	Publicação retorna false
+	Sessão desconectada ou buffer insuficiente.
+	Verifique connected(), tamanho do payload e setBufferSize.
+	JSON inválido
+	Payload truncado ou sintaxe incorreta.
+	Imprima o payload, valide campos e observe erro do ArduinoJson.
+	Comando chega, mas LED não muda
+	Pino ou lógica incorretos.
+	Teste o atuador localmente e imprima o valor interpretado.
+	Não recebe comando após reconexão
+	Tópico não foi reassinado.
+	Chame subscribe novamente após connect.
+	Programa parece travar
+	delay longo ou callback bloqueante.
+	Substitua esperas por controle com millis().
+	Disponibilidade fica online após queda
+	Last Will ou retained configurado incorretamente.
+	Revise parâmetros de connect e tópico.
+	Mensagens misturadas entre alunos
+	Tópicos não exclusivos.
+	Inclua turma, aluno e dispositivo.
+	
+
+14.1 Roteiro sistemático de diagnóstico
+61. Verifique alimentação, cabo USB, porta serial e placa selecionada.
+62. Teste o sensor e o atuador sem rede.
+63. Teste somente o Wi-Fi.
+64. Valide o broker com um cliente de desktop.
+65. Conecte o ESP32 ao broker sem JSON.
+66. Publique uma mensagem fixa.
+67. Acrescente JSON e leitura do sensor.
+68. Implemente a assinatura e o comando.
+69. Teste falhas controladas.
+70. Registre o erro, a hipótese, o teste e o resultado.
+15. Segurança e boas práticas
+* Use credenciais individuais ou por grupo quando possível.
+* Não reutilize senhas pessoais no broker da disciplina.
+* Não publique secrets.h em repositórios públicos.
+* Utilize clientId e tópicos exclusivos.
+* Valide campos e tipos antes de executar comandos.
+* Restrinja o conjunto de ações aceitas pelo dispositivo.
+* Evite comandos genéricos que permitam controlar qualquer pino.
+* Não exponha broker local diretamente à internet sem configuração segura.
+* Prefira TLS quando a infraestrutura fornecida suportar e quando essa exigência não impedir a aprendizagem essencial.
+* Registre erros sem imprimir senhas ou tokens.
+Escopo da segurança
+	A Etapa 1 introduz boas práticas, mas não exige uma infraestrutura completa de identidade, certificados e autorização granular. Esses assuntos podem ser aprofundados posteriormente.
+	
+
+16. Desenvolvimento e entrega da Etapa 1
+16.1 Marco obrigatório
+Ao final da etapa, o estudante deverá demonstrar individualmente um dispositivo conectado ao Wi-Fi e ao broker MQTT, publicando dados do sensor e recebendo comandos para o atuador.
+☐ Proposta do problema e justificativa.
+☐ Diagrama completo da arquitetura prevista.
+☐ Tabela de requisitos funcionais.
+☐ Tabela de tópicos MQTT.
+☐ Especificação das mensagens JSON.
+☐ Circuito com sensor e atuador funcionando localmente.
+☐ Conexão Wi-Fi e reconexão automática.
+☐ Publicação de telemetria.
+☐ Recepção de comando.
+☐ Publicação de estado confirmado.
+☐ Tratamento de JSON inválido.
+☐ Código-fonte organizado.
+☐ README com instruções de execução.
+☐ Registro de testes e evidências.
+☐ Demonstração prática.
+16.2 Modelo de relatório breve
+Seção
+	Conteúdo esperado
+	Problema
+	Contexto, usuário e necessidade.
+	Arquitetura
+	Componentes e fluxos de telemetria/comando.
+	Hardware
+	Sensor, atuador e tabela de pinos.
+	Conectividade
+	Rede utilizada, diagnóstico e reconexão.
+	MQTT
+	Broker, clientId, tópicos, QoS, retained e Last Will.
+	Mensagens
+	JSON de telemetria, comando e estado.
+	Testes
+	Casos executados, resultados e falhas encontradas.
+	Limitações
+	O que ainda não foi implementado.
+	Próxima etapa
+	Como gateway e banco serão integrados.
+	
+
+17. Critérios de avaliação
+Critério
+	Excelente
+	Adequado
+	Parcial
+	Insuficiente
+	Arquitetura e documentação
+	Fluxos completos, decisões justificadas e documentação clara.
+	Arquitetura correta com pequenas lacunas.
+	Arquitetura incompleta ou pouco explicada.
+	Sem arquitetura coerente.
+	Wi-Fi e diagnóstico
+	Conecta, informa parâmetros e recupera falhas sem reset.
+	Conecta e possui reconexão básica.
+	Conecta com instabilidade ou exige intervenção.
+	Não conecta.
+	MQTT — publicação
+	Telemetria periódica, estruturada e validada.
+	Publica dados corretos.
+	Publicação inconsistente ou pouco estruturada.
+	Não publica.
+	MQTT — comando
+	Valida comando, aciona e confirma estado.
+	Recebe e aciona corretamente.
+	Recebe parcialmente ou sem confirmação.
+	Não recebe/aciona.
+	Tratamento de falhas
+	Erros principais tratados e diagnosticados.
+	Tratamento básico presente.
+	Pouco tratamento; mensagens insuficientes.
+	Falhas interrompem o sistema.
+	Código
+	Modular, legível, sem bloqueios desnecessários.
+	Organizado e funcional.
+	Funcional, mas pouco organizado.
+	Incompleto ou não executável.
+	Testes e evidências
+	Testes normais e de falha bem documentados.
+	Testes essenciais documentados.
+	Poucas evidências.
+	Sem testes verificáveis.
+	Domínio individual
+	Explica decisões e realiza ajustes durante a demonstração.
+	Explica o funcionamento geral.
+	Explicação parcial.
+	Não demonstra autoria ou compreensão.
+	
+
+17.1 Distribuição sugerida da nota prática
+Componente
+	Percentual
+	Arquitetura e documentação
+	15%
+	Conectividade Wi-Fi
+	15%
+	Publicação MQTT
+	20%
+	Comando e confirmação
+	20%
+	Tratamento de falhas
+	10%
+	Código e organização
+	10%
+	Demonstração e domínio
+	10%
+	
+
+18. Revisão para a prova teórica
+18.1 Síntese conceitual
+* A arquitetura IoT separa dispositivo, comunicação, broker/gateway, persistência e interface.
+* Wi-Fi fornece conectividade IP; MQTT fornece mensageria sobre essa conectividade.
+* O broker desacopla publicadores e assinantes.
+* Tópicos organizam fluxos; payloads carregam dados.
+* ClientId deve ser exclusivo para evitar encerramento de sessões.
+* QoS representa diferentes garantias de entrega.
+* Retained fornece o último valor conhecido a novos assinantes.
+* Last Will permite indicar desconexão inesperada.
+* JSON facilita interoperabilidade, mas deve ser validado.
+* Reconexão Wi-Fi e MQTT são problemas distintos.
+* O dispositivo deve confirmar o estado do atuador após executar um comando.
+18.2 Questões objetivas
+1. No MQTT, o componente que encaminha mensagens aos assinantes é:
+a) sensor  b) broker  c) gateway IP  d) atuador
+2. O recurso que permite registrar uma mensagem para novos assinantes é:
+a) RSSI  b) retained  c) DHCP  d) callback
+3. Um clientId duplicado pode causar:
+a) aumento do RSSI  b) encerramento alternado das sessões  c) mudança do IP do broker  d) erro no sensor
+4. A função mqttClient.loop() é importante para:
+a) alimentar o LED  b) manter a sessão e processar mensagens  c) gerar endereço IP  d) instalar bibliotecas
+5. O Last Will é publicado quando:
+a) o cliente solicita explicitamente qualquer comando  b) o broker detecta desconexão inesperada  c) o sensor muda de valor  d) o DHCP renova o endereço
+6. O formato JSON é usado principalmente para:
+a) aumentar a potência do Wi-Fi  b) estruturar dados interoperáveis  c) substituir o broker  d) definir o pino do ESP32
+7. QoS 1 pode gerar:
+a) nenhuma entrega  b) duplicatas  c) apenas mensagens retidas  d) perda obrigatória
+8. Após reconectar ao broker, o dispositivo deve:
+a) trocar de sensor  b) reassinar tópicos  c) apagar o firmware  d) desligar o Wi-Fi
+18.3 Questões discursivas e cenários
+• Um ESP32 mostra WL_CONNECTED, mas não publica mensagens. Apresente uma sequência de diagnóstico.
+• Explique como retained e Last Will podem representar a disponibilidade do dispositivo.
+• Proponha tópicos para três dispositivos do mesmo estudante sem misturar mensagens.
+• Analise por que um delay de 60 segundos pode prejudicar MQTT e sugira alternativa.
+• Descreva o fluxo completo desde a alteração do sensor até a futura exibição no sistema web.
+• Explique por que a confirmação do estado do atuador é diferente da publicação do comando.
+18.4 Análise de código
+Trecho para análise
+void loop() {
+  if (!mqttClient.connected()) {
+    mqttClient.connect("esp32");
+  }
+  mqttClient.publish("sensor", "123");
+  delay(30000);
+}
+	
+
+Identifique pelo menos cinco limitações no código: ausência de Wi-Fi verificado, clientId genérico, ausência de autenticação, reconexão agressiva, tópico genérico, ausência de mqttClient.loop(), publicação sem verificar retorno, payload não estruturado e delay bloqueante.
+19. Glossário
+Termo
+	Definição
+	Atuador
+	Componente que executa uma ação física ou lógica.
+	Broker
+	Servidor de mensageria MQTT.
+	Callback
+	Função chamada quando um evento ocorre, como chegada de mensagem.
+	ClientId
+	Identificador do cliente MQTT.
+	Gateway
+	Componente intermediário que integra dispositivos e sistemas.
+	JSON
+	Formato textual estruturado em pares chave-valor.
+	Last Will
+	Mensagem publicada pelo broker em desconexão inesperada.
+	MQTT
+	Protocolo leve de mensageria publicação–assinatura.
+	Payload
+	Conteúdo transportado em uma mensagem.
+	QoS
+	Qualidade de serviço da entrega MQTT.
+	Retained
+	Indicador para o broker manter a última mensagem do tópico.
+	RSSI
+	Indicador aproximado da intensidade do sinal recebido.
+	Telemetria
+	Dados medidos e enviados pelo dispositivo.
+	Tópico
+	Nome hierárquico utilizado para organizar mensagens.
+	Uptime
+	Tempo desde a inicialização do dispositivo.
+	
+
+20. Referências e documentação de apoio
+BANKS, A.; GUPTA, R. MQTT Version 3.1.1. OASIS Standard.
+ESPRESSIF SYSTEMS. ESP32 Series Datasheet e documentação do Arduino Core for ESP32.
+KNOLLEARY, N. PubSubClient: biblioteca MQTT para Arduino. Documentação do projeto.
+BLANCHON, B. ArduinoJson: documentação e exemplos oficiais.
+KUROSE, J. F.; ROSS, K. W. Redes de Computadores e a Internet: uma abordagem top-down.
+TANENBAUM, A. S.; VAN STEEN, M. Sistemas Distribuídos: princípios e paradigmas.
+Documentação do broker e do cliente MQTT adotados pelo professor na oferta da disciplina.
+Anexo A — Ficha de proposta individual
+Campo
+	Preenchimento
+	Título do projeto
+	
+
+	Problema
+	
+
+	Usuário
+	
+
+	Sensor
+	
+
+	Atuador
+	
+
+	Evento de telemetria
+	
+
+	Comando remoto
+	
+
+	Device ID
+	
+
+	Tópico telemetry
+	
+
+	Tópico command
+	
+
+	Tópico state
+	
+
+	Tópico availability
+	
+
+	Riscos e limitações
+	
+
+	
+
+Anexo B — Registro de testes
+ID
+	Cenário
+	Procedimento
+	Resultado esperado
+	Resultado obtido
+	Situação
+	T01
+	Conexão Wi-Fi
+	
+
+	
+
+	
+
+	
+
+	T02
+	Perda do Wi-Fi
+	
+
+	
+
+	
+
+	
+
+	T03
+	Conexão MQTT
+	
+
+	
+
+	
+
+	
+
+	T04
+	Publicação de telemetria
+	
+
+	
+
+	
+
+	
+
+	T05
+	Comando válido
+	
+
+	
+
+	
+
+	
+
+	T06
+	JSON inválido
+	
+
+	
+
+	
+
+	
+
+	T07
+	Tópico incorreto
+	
+
+	
+
+	
+
+	
+
+	T08
+	Recuperação do broker
+	
+
+	
+
+	
+
+	
+
+	
+
+Anexo C — Checklist de demonstração
+☐ Abrir o monitor serial e identificar o dispositivo.
+☐ Mostrar conexão Wi-Fi, IP e RSSI.
+☐ Mostrar conexão MQTT e tópico de disponibilidade.
+☐ Exibir telemetria no cliente MQTT.
+☐ Enviar comando válido para o atuador.
+☐ Exibir confirmação de estado.
+☐ Enviar mensagem inválida e mostrar rejeição.
+☐ Simular falha de rede e mostrar recuperação.
+☐ Apresentar diagrama e justificar tópicos/mensagens.
+☐ Indicar limitações e próximos passos.
+Fim da Apostila — Etapa 1
