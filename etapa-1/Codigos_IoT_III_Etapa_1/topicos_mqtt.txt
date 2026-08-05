@@ -1,0 +1,4 @@
+ifmg/iot3/<turma>/<aluno>/<dispositivo>/telemetry
+ifmg/iot3/<turma>/<aluno>/<dispositivo>/command
+ifmg/iot3/<turma>/<aluno>/<dispositivo>/state
+ifmg/iot3/<turma>/<aluno>/<dispositivo>/availability

@@ -1,0 +1,6 @@
+{
+  "deviceId": "charles01",
+  "actuator": "led",
+  "state": true,
+  "requestId": "cmd-2026-001"
+}

@@ -1,0 +1,6 @@
+{
+  "action": "set",
+  "target": "led",
+  "value": true,
+  "requestId": "cmd-2026-001"
+}

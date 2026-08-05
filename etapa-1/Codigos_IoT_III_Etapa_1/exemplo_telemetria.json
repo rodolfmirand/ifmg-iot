@@ -1,0 +1,8 @@
+{
+  "deviceId": "charles01",
+  "sensor": "luminosidade",
+  "value": 1875,
+  "unit": "raw",
+  "sequence": 42,
+  "uptimeMs": 128500
+}
