@@ -9,12 +9,12 @@
 - [ ] 1x ESP32 DevKit (placa de desenvolvimento com Wi-Fi integrado).
 - [ ] 1x termistor NTC 10k, coeficiente Beta 3950, sonda à prova d'água.
 - [ ] 1x resistor de 10kΩ (par do divisor de tensão com o NTC — mesma faixa nominal do sensor a 25°C).
-- [ ] 1x buzzer ativo 5V (emite som sozinho ao receber tensão, sem precisar de sinal PWM).
+- [X] 1x buzzer ativo 5V (emite som sozinho ao receber tensão, sem precisar de sinal PWM).
 - [ ] 1x resistor de 220Ω–330Ω (proteção em série com o buzzer — opcional, mas recomendado).
 - [ ] 1x protoboard (breadboard) pequena/média.
-- [ ] Jumpers macho-macho (ligações na protoboard) e macho-fêmea (ligação direta nos pinos do ESP32).
-- [ ] 1x cabo USB (micro-USB ou USB-C, conforme o modelo da placa) para alimentação e upload do firmware.
-- [ ] Computador com porta USB disponível.
+- [X] Jumpers macho-macho (ligações na protoboard) e macho-fêmea (ligação direta nos pinos do ESP32).
+- [X] 1x cabo USB (micro-USB ou USB-C, conforme o modelo da placa) para alimentação e upload do firmware.
+- [X] Computador com porta USB disponível.
 
 ## Software
 
