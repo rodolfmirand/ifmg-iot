@@ -18,12 +18,12 @@
 
 ## Software
 
-- [ ] Arduino IDE (ou ambiente equivalente aprovado pelo professor).
-- [ ] Pacote de placas ESP32 instalado na Arduino IDE.
-- [ ] Biblioteca **PubSubClient** (cliente MQTT).
-- [ ] Biblioteca **ArduinoJson** (montagem/leitura dos payloads JSON), versão 7.x.
-- [ ] Biblioteca **OneWire** (comunicação com o barramento do DS18B20).
-- [ ] Biblioteca **DallasTemperature** (leitura de temperatura do DS18B20).
+- [X] Arduino IDE (ou ambiente equivalente aprovado pelo professor).
+- [X] Pacote de placas ESP32 instalado na Arduino IDE.
+- [X] Biblioteca **PubSubClient** (cliente MQTT).
+- [X] Biblioteca **ArduinoJson** (montagem/leitura dos payloads JSON), versão 7.x.
+- [X] Biblioteca **OneWire** (comunicação com o barramento do DS18B20).
+- [X] Biblioteca **DallasTemperature** (leitura de temperatura do DS18B20).
 - [ ] Cliente MQTT de desktop para testes manuais (MQTT Explorer ou equivalente).
 
 ## Infraestrutura fornecida pela disciplina
