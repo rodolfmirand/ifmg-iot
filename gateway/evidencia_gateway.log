@@ -1,19 +1,77 @@
-2026-10-12T15:01:42.826Z [redis] conectado em redis://127.0.0.1:6379
-2026-10-12T15:01:42.914Z [mqtt] conectado em mqtt://localhost:1883 como gw-cadeiafria-6cd8d3
-2026-10-12T15:01:42.932Z [mqtt] assinado: ifmg/iot3/2026-1/rodolfo/+/#
-2026-10-12T15:01:44.257Z [OK] esp32cadeiafria availability=online
-2026-10-12T15:01:44.259Z [OK] esp32cadeiafria telemetry seq=0 T=null°C armed=true led=false
-2026-10-12T15:01:44.556Z [OK] esp32cadeiafria telemetry seq=1 T=20.88°C armed=true led=true
-2026-10-12T15:01:44.858Z [OK] esp32cadeiafria telemetry seq=2 T=20.94°C armed=true led=true
-2026-10-12T15:01:45.161Z [OK] esp32cadeiafria telemetry seq=3 T=7.5°C armed=true led=false
-2026-10-12T15:01:45.164Z [OK] esp32cadeiafria command alarm=false req=sim-01
-2026-10-12T15:01:45.165Z [OK] esp32cadeiafria state alarm=false req=sim-01
-2026-10-12T15:01:45.467Z [OK] esp32cadeiafria telemetry seq=4 T=5.2°C armed=false led=false
-2026-10-12T15:01:45.771Z [OK] esp32cadeiafria telemetry seq=5 T=9.1°C armed=false led=false
-2026-10-12T15:01:46.072Z [INVÁLIDA] ifmg/iot3/2026-1/rodolfo/esp32cadeiafria/telemetry → JSON malformado: Expected double-quoted property name in JSON at position 31 (line 1 column 32) | payload={"deviceId":"esp32cadeiafria", value: 5
-2026-10-12T15:01:46.073Z [INVÁLIDA] ifmg/iot3/2026-1/rodolfo/esp32cadeiafria/telemetry → value deve ser número ou null | payload={"deviceId":"esp32cadeiafria","sensor":"temperatura","value":"quente","unit":"C","sequence":99,"uptimeMs":1,"armed":true,"ledOn":false}
-2026-10-12T15:01:46.074Z [INVÁLIDA] ifmg/iot3/2026-1/rodolfo/esp32cadeiafria/telemetry → deviceId do payload (outro-device) difere do tópico (esp32cadeiafria) | payload={"deviceId":"outro-device","sensor":"temperatura","value":4,"unit":"C","sequence":1,"uptimeMs":1,"armed":true,"ledOn":false}
-2026-10-12T15:01:46.075Z [INVÁLIDA] ifmg/iot3/2026-1/rodolfo/esp32cadeiafria/availability → availability inválido: "talvez" | payload=talvez
+# Evidência — Gateway MQTT → Redis (Entregas 4 e 5)
+# Projeto: Cadeia Fria IoT — IFMG Ouro Branco — IoT III
+# Data: 12/10/2026 | Broker: broker.hivemq.com:1883 | Redis: 127.0.0.1:6379
+# Origem: saída do terminal do gateway (npm start) com ESP32 real (esp32cadeiafria).
+# Horários em UTC (São Paulo = UTC-3).
+#
+# Eventos relevantes:
+#   15:57:20  mensagens retidas (state/availability) recebidas ao assinar
+#   16:02:33  [INVÁLIDA] comando com aspas escapadas incorretamente (JSON malformado)
+#   16:04:48  comando e5-01 (desarmar) -> confirmação state e5-01
+#   16:05:48  comando e5-02 (LED manual) -> confirmação state e5-02
+#   16:06:06  [INVÁLIDA] telemetria "{quebrado" (teste proposital)
+#   16:06:30  comando e5-03 (rearmar) -> confirmação state e5-03
+# Faixa de temperatura configurada no firmware durante o teste: 0 a 10 °C.
 
-2026-10-12T15:01:47.397Z encerrando — válidas=9 inválidas=4 errosRedis=0
-2026-10-12T15:01:47.401Z [mqtt] conexão fechada
+PS D:\Projetos\academicos\ifmg-iot\gateway> npm start
+
+> cadeiafria-gateway@1.0.0 start
+> node gateway.js
+
+2026-10-12T15:57:18.997Z [redis] conectado em redis://127.0.0.1:6379
+2026-10-12T15:57:19.813Z [mqtt] conectado em mqtt://broker.hivemq.com:1883 como gw-cadeiafria-729f1d
+2026-10-12T15:57:20.033Z [mqtt] assinado: ifmg/iot3/2026-1/rodolfo/+/#
+2026-10-12T15:57:20.044Z [OK] esp32cadeiafria state alarm=true req=startup
+2026-10-12T15:57:20.050Z [OK] esp32cadeiafria availability=offline
+2026-10-12T15:57:28.136Z [OK] esp32cadeiafria telemetry seq=23 T=6°C armed=true led=false
+2026-10-12T15:57:43.876Z [OK] esp32cadeiafria telemetry seq=24 T=5.75°C armed=true led=false
+2026-10-12T15:57:59.624Z [OK] esp32cadeiafria telemetry seq=25 T=5.63°C armed=true led=false
+2026-10-12T15:58:15.376Z [OK] esp32cadeiafria telemetry seq=26 T=5.44°C armed=true led=false
+2026-10-12T15:58:31.134Z [OK] esp32cadeiafria telemetry seq=27 T=5°C armed=true led=false
+2026-10-12T15:58:46.878Z [OK] esp32cadeiafria telemetry seq=28 T=4.81°C armed=true led=false
+2026-10-12T15:59:02.626Z [OK] esp32cadeiafria telemetry seq=29 T=4.69°C armed=true led=false
+2026-10-12T15:59:18.376Z [OK] esp32cadeiafria telemetry seq=30 T=4.63°C armed=true led=false
+2026-10-12T15:59:34.129Z [OK] esp32cadeiafria telemetry seq=31 T=4.56°C armed=true led=false
+2026-10-12T15:59:49.881Z [OK] esp32cadeiafria telemetry seq=32 T=4.44°C armed=true led=false
+2026-10-12T16:00:05.629Z [OK] esp32cadeiafria telemetry seq=33 T=4.38°C armed=true led=false
+2026-10-12T16:00:21.379Z [OK] esp32cadeiafria telemetry seq=34 T=4.31°C armed=true led=false
+2026-10-12T16:00:37.130Z [OK] esp32cadeiafria telemetry seq=35 T=4.38°C armed=true led=false
+2026-10-12T16:00:52.886Z [OK] esp32cadeiafria telemetry seq=36 T=4.38°C armed=true led=false
+2026-10-12T16:01:08.634Z [OK] esp32cadeiafria telemetry seq=37 T=4.44°C armed=true led=false
+2026-10-12T16:01:24.382Z [OK] esp32cadeiafria telemetry seq=38 T=4.38°C armed=true led=false
+2026-10-12T16:01:40.139Z [OK] esp32cadeiafria telemetry seq=39 T=5.38°C armed=true led=false
+2026-10-12T16:01:55.884Z [OK] esp32cadeiafria telemetry seq=40 T=6.88°C armed=true led=false
+2026-10-12T16:02:11.634Z [OK] esp32cadeiafria telemetry seq=41 T=7.94°C armed=true led=false
+2026-10-12T16:02:28.429Z [OK] esp32cadeiafria telemetry seq=42 T=8.88°C armed=true led=false
+2026-10-12T16:02:33.193Z [INVÁLIDA] ifmg/iot3/2026-1/rodolfo/esp32cadeiafria/command → JSON malformado: Expected property name or '}' in JSON at position 1 (line 1 column 2) | payload={\"action\":\"set\",\"target\":\"alarm\",\"value\":false,\"requestId\":\"e5-01\"}
+2026-10-12T16:02:43.137Z [OK] esp32cadeiafria telemetry seq=43 T=9.69°C armed=true led=false
+2026-10-12T16:02:58.896Z [OK] esp32cadeiafria telemetry seq=44 T=10.38°C armed=true led=true
+2026-10-12T16:03:14.638Z [OK] esp32cadeiafria telemetry seq=45 T=10.88°C armed=true led=true
+2026-10-12T16:03:30.389Z [OK] esp32cadeiafria telemetry seq=46 T=11.31°C armed=true led=true
+2026-10-12T16:03:46.138Z [OK] esp32cadeiafria telemetry seq=47 T=11.63°C armed=true led=true
+2026-10-12T16:04:01.893Z [OK] esp32cadeiafria telemetry seq=48 T=12.06°C armed=true led=true
+2026-10-12T16:04:17.643Z [OK] esp32cadeiafria telemetry seq=49 T=12.38°C armed=true led=true
+2026-10-12T16:04:33.394Z [OK] esp32cadeiafria telemetry seq=50 T=12.63°C armed=true led=true
+2026-10-12T16:04:48.783Z [OK] esp32cadeiafria command alarm=false req=e5-01
+2026-10-12T16:04:49.015Z [OK] esp32cadeiafria state alarm=false req=e5-01
+2026-10-12T16:04:49.318Z [OK] esp32cadeiafria telemetry seq=51 T=12.75°C armed=false led=false
+2026-10-12T16:05:04.894Z [OK] esp32cadeiafria telemetry seq=52 T=9.06°C armed=false led=false
+2026-10-12T16:05:20.653Z [OK] esp32cadeiafria telemetry seq=53 T=6.81°C armed=false led=false
+2026-10-12T16:05:36.402Z [OK] esp32cadeiafria telemetry seq=54 T=6.94°C armed=false led=false
+2026-10-12T16:05:48.630Z [OK] esp32cadeiafria command led=true req=e5-02
+2026-10-12T16:05:48.930Z [OK] esp32cadeiafria state led=true req=e5-02
+2026-10-12T16:05:52.145Z [OK] esp32cadeiafria telemetry seq=55 T=8.63°C armed=false led=true
+2026-10-12T16:06:06.487Z [INVÁLIDA] ifmg/iot3/2026-1/rodolfo/esp32cadeiafria/telemetry → JSON malformado: Expected property name or '}' in JSON at position 1 (line 1 column 2) | payload={quebrado
+2026-10-12T16:06:07.901Z [OK] esp32cadeiafria telemetry seq=56 T=10.19°C armed=false led=true
+2026-10-12T16:06:23.644Z [OK] esp32cadeiafria telemetry seq=57 T=11.75°C armed=false led=true
+2026-10-12T16:06:30.167Z [OK] esp32cadeiafria command alarm=true req=e5-03
+2026-10-12T16:06:30.397Z [OK] esp32cadeiafria state alarm=true req=e5-03
+2026-10-12T16:06:39.403Z [OK] esp32cadeiafria telemetry seq=58 T=12.94°C armed=true led=true
+2026-10-12T16:06:55.149Z [OK] esp32cadeiafria telemetry seq=59 T=13.94°C armed=true led=true
+2026-10-12T16:07:10.906Z [OK] esp32cadeiafria telemetry seq=60 T=14.81°C armed=true led=true
+2026-10-12T16:07:26.654Z [OK] esp32cadeiafria telemetry seq=61 T=15.5°C armed=true led=true
+2026-10-12T16:07:42.408Z [OK] esp32cadeiafria telemetry seq=62 T=16.13°C armed=true led=true
+2026-10-12T16:07:58.154Z [OK] esp32cadeiafria telemetry seq=63 T=16.63°C armed=true led=true
+2026-10-12T16:08:13.909Z [OK] esp32cadeiafria telemetry seq=64 T=17.06°C armed=true led=true
+2026-10-12T16:08:29.657Z [OK] esp32cadeiafria telemetry seq=65 T=17.44°C armed=true led=true
+2026-10-12T16:08:45.404Z [OK] esp32cadeiafria telemetry seq=66 T=17.69°C armed=true led=true

@@ -1,96 +1,297 @@
-$ node query.js devices
-[ 'esp32cadeiafria' ]
+# Evidência — Consultas ao Redis (Entrega 5)
+# Projeto: Cadeia Fria IoT — IFMG Ouro Branco — IoT III
+# Data: 12/10/2026 | Dispositivo: esp32cadeiafria (ESP32 real)
+# Origem: saídas do terminal PowerShell, na ordem de execução.
+#
+# Seções:
+#   1. Histórico de telemetria (ZSET)
+#   2. Comando e5-01 (desarmar) e estado atual persistido
+#   3. Comando e5-02 (LED manual) e mensagem inválida
+#   4. Comando e5-03 (rearmar) e auditoria comando -> confirmação
+#   5. Presença: ESP32 desligado (offline) e religado (online)
+#   6. Estrutura de chaves no Redis (redis-cli)
+#   7. Consulta por janela de tempo
 
-$ node query.js state esp32cadeiafria
+# =====================================================================
+# 1. Histórico de telemetria
+# =====================================================================
+PS D:\Projetos\academicos\ifmg-iot\gateway> npm run query -- history esp32cadeiafria 20
+
+> cadeiafria-gateway@1.0.0 query
+> node query.js history esp32cadeiafria 20
+
+Total armazenado: 104 | exibindo 20
+┌─────────┬────────────────────────┬─────┬───────┬───────┬───────┬──────┐
+│ (index) │ recebido               │ seq │ tempC │ armed │ ledOn │ rssi │
+├─────────┼────────────────────────┼─────┼───────┼───────┼───────┼──────┤
+│ 0       │ '12/10/2026, 12:59:18' │ 30  │ 4.63  │ true  │ false │ -58  │
+│ 1       │ '12/10/2026, 12:59:34' │ 31  │ 4.56  │ true  │ false │ -54  │
+│ 2       │ '12/10/2026, 12:59:49' │ 32  │ 4.44  │ true  │ false │ -67  │
+│ 3       │ '12/10/2026, 13:00:05' │ 33  │ 4.38  │ true  │ false │ -58  │
+│ 4       │ '12/10/2026, 13:00:21' │ 34  │ 4.31  │ true  │ false │ -54  │
+│ 5       │ '12/10/2026, 13:00:37' │ 35  │ 4.38  │ true  │ false │ -61  │
+│ 6       │ '12/10/2026, 13:00:52' │ 36  │ 4.38  │ true  │ false │ -62  │
+│ 7       │ '12/10/2026, 13:01:08' │ 37  │ 4.44  │ true  │ false │ -62  │
+│ 8       │ '12/10/2026, 13:01:24' │ 38  │ 4.38  │ true  │ false │ -61  │
+│ 9       │ '12/10/2026, 13:01:40' │ 39  │ 5.38  │ true  │ false │ -60  │
+│ 10      │ '12/10/2026, 13:01:55' │ 40  │ 6.88  │ true  │ false │ -60  │
+│ 11      │ '12/10/2026, 13:02:11' │ 41  │ 7.94  │ true  │ false │ -66  │
+│ 12      │ '12/10/2026, 13:02:28' │ 42  │ 8.88  │ true  │ false │ -68  │
+│ 13      │ '12/10/2026, 13:02:43' │ 43  │ 9.69  │ true  │ false │ -65  │
+│ 14      │ '12/10/2026, 13:02:58' │ 44  │ 10.38 │ true  │ true  │ -64  │
+│ 15      │ '12/10/2026, 13:03:14' │ 45  │ 10.88 │ true  │ true  │ -64  │
+│ 16      │ '12/10/2026, 13:03:30' │ 46  │ 11.31 │ true  │ true  │ -60  │
+│ 17      │ '12/10/2026, 13:03:46' │ 47  │ 11.63 │ true  │ true  │ -64  │
+│ 18      │ '12/10/2026, 13:04:01' │ 48  │ 12.06 │ true  │ true  │ -58  │
+│ 19      │ '12/10/2026, 13:04:17' │ 49  │ 12.38 │ true  │ true  │ -65  │
+└─────────┴────────────────────────┴─────┴───────┴───────┴───────┴──────┘
+
+# =====================================================================
+# 2. Comando e5-01 (desarmar) -> estado atual persistido
+# =====================================================================
+PS D:\Projetos\academicos\ifmg-iot\gateway> $T = "ifmg/iot3/2026-1/rodolfo/esp32cadeiafria"
+PS D:\Projetos\academicos\ifmg-iot\gateway> mosquitto_pub -h broker.hivemq.com -t "$T/command" -f cmds\desarmar.json
+PS D:\Projetos\academicos\ifmg-iot\gateway> npm run query -- state esp32cadeiafria
+
+> cadeiafria-gateway@1.0.0 query
+> node query.js state esp32cadeiafria
+
 {
   "deviceId": "esp32cadeiafria",
   "state": {
-    "temperature": "9.1",
-    "sensorOk": "true",
     "armed": "false",
+    "alarmConfirmedAt": "1791821089014",
+    "lastRequestId": "e5-01",
+    "temperature": "9.06",
+    "sensorOk": "true",
     "ledOn": "false",
-    "sequence": "5",
-    "uptimeMs": "90174",
-    "wifiRssi": "-55",
-    "lastTelemetryAt": "1791817305770",
-    "lastTelemetryIso": "2026-10-12T15:01:45.770Z",
-    "lastTopic": "ifmg/iot3/2026-1/rodolfo/esp32cadeiafria/telemetry",
-    "alarmConfirmedAt": "1791817305165",
-    "lastRequestId": "sim-01"
+    "sequence": "52",
+    "uptimeMs": "834777",
+    "wifiRssi": "-60",
+    "lastTelemetryAt": "1791821104893",
+    "lastTelemetryIso": "2026-10-12T16:05:04.893Z",
+    "lastTopic": "ifmg/iot3/2026-1/rodolfo/esp32cadeiafria/telemetry"
   },
   "presence": {
     "status": "online",
-    "statusChangedAt": "1791817304254",
-    "statusChangedIso": "2026-10-12T15:01:44.254Z",
-    "lastSeen": "1791817305770",
-    "lastSeenIso": "2026-10-12T15:01:45.770Z",
-    "heartbeatTtl": 45,
+    "statusChangedAt": "1791820640047",
+    "statusChangedIso": "2026-10-12T15:57:20.047Z",
+    "lastSeen": "1791821104893",
+    "lastSeenIso": "2026-10-12T16:05:04.893Z",
+    "heartbeatTtl": 56,
     "reachable": true
   }
 }
 
-$ node query.js history esp32cadeiafria 10
-Total armazenado: 6 | exibindo 6
-┌─────────┬────────────────────────┬─────┬───────┬───────┬───────┬──────┐
-│ (index) │ recebido               │ seq │ tempC │ armed │ ledOn │ rssi │
-├─────────┼────────────────────────┼─────┼───────┼───────┼───────┼──────┤
-│ 0       │ '12/10/2026, 12:01:44' │ 0   │ null  │ true  │ false │ -55  │
-│ 1       │ '12/10/2026, 12:01:44' │ 1   │ 20.88 │ true  │ true  │ -55  │
-│ 2       │ '12/10/2026, 12:01:44' │ 2   │ 20.94 │ true  │ true  │ -55  │
-│ 3       │ '12/10/2026, 12:01:45' │ 3   │ 7.5   │ true  │ false │ -55  │
-│ 4       │ '12/10/2026, 12:01:45' │ 4   │ 5.2   │ false │ false │ -55  │
-│ 5       │ '12/10/2026, 12:01:45' │ 5   │ 9.1   │ false │ false │ -55  │
-└─────────┴────────────────────────┴─────┴───────┴───────┴───────┴──────┘
+# =====================================================================
+# 3. Comando e5-02 (LED manual) e mensagem inválida proposital
+# =====================================================================
+PS D:\Projetos\academicos\ifmg-iot\gateway> mosquitto_pub -h broker.hivemq.com -t "$T/command" -f cmds\led-on.json
+PS D:\Projetos\academicos\ifmg-iot\gateway> mosquitto_pub -h broker.hivemq.com -t "$T/telemetry" -f cmds\invalido.json
+PS D:\Projetos\academicos\ifmg-iot\gateway> npm run query -- invalid 3
 
-$ node query.js window esp32cadeiafria 5
-6 leituras nos últimos 5 min | min=5.2 max=20.94 média=12.72 °C
+> cadeiafria-gateway@1.0.0 query
+> node query.js invalid 3
 
-$ node query.js commands esp32cadeiafria
+[
+  {
+    "at": 1791821166487,
+    "topic": "ifmg/iot3/2026-1/rodolfo/esp32cadeiafria/telemetry",
+    "payload": "{quebrado",
+    "errors": [
+      "JSON malformado: Expected property name or '}' in JSON at position 1 (line 1 column 2)"
+    ]
+  },
+  {
+    "at": 1791820953193,
+    "topic": "ifmg/iot3/2026-1/rodolfo/esp32cadeiafria/command",
+    "payload": "{\\\"action\\\":\\\"set\\\",\\\"target\\\":\\\"alarm\\\",\\\"value\\\":false,\\\"requestId\\\":\\\"e5-01\\\"}",
+    "errors": [
+      "JSON malformado: Expected property name or '}' in JSON at position 1 (line 1 column 2)"
+    ]
+  }
+]
+
+# =====================================================================
+# 4. Comando e5-03 (rearmar) -> auditoria comando/confirmação
+# =====================================================================
+PS D:\Projetos\academicos\ifmg-iot\gateway> mosquitto_pub -h broker.hivemq.com -t "$T/command" -f cmds\armar.json
+PS D:\Projetos\academicos\ifmg-iot\gateway> npm run query -- commands esp32cadeiafria 6
+
+> cadeiafria-gateway@1.0.0 query
+> node query.js commands esp32cadeiafria 6
+
 [
   {
     "kind": "state",
     "deviceId": "esp32cadeiafria",
     "actuator": "alarm",
+    "state": true,
+    "requestId": "e5-03",
+    "receivedAt": 1791821190396
+  },
+  {
+    "kind": "command",
+    "action": "set",
+    "target": "alarm",
+    "value": true,
+    "requestId": "e5-03",
+    "receivedAt": 1791821190161
+  },
+  {
+    "kind": "state",
+    "deviceId": "esp32cadeiafria",
+    "actuator": "led",
+    "state": true,
+    "requestId": "e5-02",
+    "receivedAt": 1791821148926
+  },
+  {
+    "kind": "command",
+    "action": "set",
+    "target": "led",
+    "value": true,
+    "requestId": "e5-02",
+    "receivedAt": 1791821148619
+  },
+  {
+    "kind": "state",
+    "deviceId": "esp32cadeiafria",
+    "actuator": "alarm",
     "state": false,
-    "requestId": "sim-01",
-    "receivedAt": 1791817305165
+    "requestId": "e5-01",
+    "receivedAt": 1791821089014
   },
   {
     "kind": "command",
     "action": "set",
     "target": "alarm",
     "value": false,
-    "requestId": "sim-01",
-    "receivedAt": 1791817305162
+    "requestId": "e5-01",
+    "receivedAt": 1791821088778
   }
 ]
 
-$ node query.js invalid 2
-[
-  {
-    "at": 1791817306075,
-    "topic": "ifmg/iot3/2026-1/rodolfo/esp32cadeiafria/availability",
-    "payload": "talvez",
-    "errors": [
-      "availability inválido: \"talvez\""
-    ]
+# =====================================================================
+# 5a. Presença — ESP32 desligado da USB (LWT "offline" + heartbeat expirado)
+# =====================================================================
+PS D:\Projetos\academicos\ifmg-iot\gateway> npm run query -- state esp32cadeiafria
+
+> cadeiafria-gateway@1.0.0 query
+> node query.js state esp32cadeiafria
+
+{
+  "deviceId": "esp32cadeiafria",
+  "state": {
+    "armed": "true",
+    "alarmConfirmedAt": "1791821190396",
+    "lastRequestId": "e5-03",
+    "temperature": "18.81",
+    "sensorOk": "true",
+    "ledOn": "true",
+    "sequence": "72",
+    "uptimeMs": "1149777",
+    "wifiRssi": "-61",
+    "lastTelemetryAt": "1791821419914",
+    "lastTelemetryIso": "2026-10-12T16:10:19.914Z",
+    "lastTopic": "ifmg/iot3/2026-1/rodolfo/esp32cadeiafria/telemetry",
+    "ledConfirmedAt": "1791821148926"
   },
-  {
-    "at": 1791817306074,
-    "topic": "ifmg/iot3/2026-1/rodolfo/esp32cadeiafria/telemetry",
-    "payload": "{\"deviceId\":\"outro-device\",\"sensor\":\"temperatura\",\"value\":4,\"unit\":\"C\",\"sequence\":1,\"uptimeMs\":1,\"armed\":true,\"ledOn\":false}",
-    "errors": [
-      "deviceId do payload (outro-device) difere do tópico (esp32cadeiafria)"
-    ]
+  "presence": {
+    "status": "offline",
+    "statusChangedAt": "1791821477627",
+    "statusChangedIso": "2026-10-12T16:11:17.627Z",
+    "lastSeen": "1791821419914",
+    "lastSeenIso": "2026-10-12T16:10:19.914Z",
+    "heartbeatTtl": -2,
+    "reachable": false
   }
-]
+}
 
-$ redis-cli --scan --pattern "cadeiafria:*"
-cadeiafria:device:esp32cadeiafria:alive
-cadeiafria:device:esp32cadeiafria:commands
-cadeiafria:device:esp32cadeiafria:presence
-cadeiafria:device:esp32cadeiafria:state
-cadeiafria:device:esp32cadeiafria:telemetry
-cadeiafria:devices
-cadeiafria:log:invalid
+# =====================================================================
+# 5b. Presença — ESP32 religado (reboot: sequence=0, reconexão "online")
+# =====================================================================
+PS D:\Projetos\academicos\ifmg-iot\gateway> npm run query -- state esp32cadeiafria
+
+> cadeiafria-gateway@1.0.0 query
+> node query.js state esp32cadeiafria
+
+{
+  "deviceId": "esp32cadeiafria",
+  "state": {
+    "armed": "true",
+    "alarmConfirmedAt": "1791821502431",
+    "lastRequestId": "startup",
+    "temperature": "19.56",
+    "sensorOk": "true",
+    "ledOn": "true",
+    "sequence": "0",
+    "uptimeMs": "15777",
+    "wifiRssi": "-65",
+    "lastTelemetryAt": "1791821512241",
+    "lastTelemetryIso": "2026-10-12T16:11:52.241Z",
+    "lastTopic": "ifmg/iot3/2026-1/rodolfo/esp32cadeiafria/telemetry",
+    "ledConfirmedAt": "1791821148926"
+  },
+  "presence": {
+    "status": "online",
+    "statusChangedAt": "1791821502124",
+    "statusChangedIso": "2026-10-12T16:11:42.124Z",
+    "lastSeen": "1791821512241",
+    "lastSeenIso": "2026-10-12T16:11:52.241Z",
+    "heartbeatTtl": 51,
+    "reachable": true
+  }
+}
+
+# =====================================================================
+# 6. Estrutura de chaves no Redis (conferência direta com redis-cli)
+# =====================================================================
+PS D:\Projetos\academicos\ifmg-iot\gateway> docker exec redis redis-cli --scan --pattern "cadeiafria:*"
 cadeiafria:log:valid
+cadeiafria:device:esp32cadeiafria:telemetry
+cadeiafria:device:esp32cadeiafria:commands
+cadeiafria:device:esp32cadeiafria:state
+cadeiafria:device:esp32cadeiafria:alive
+cadeiafria:log:invalid
+cadeiafria:device:esp32cadeiafria:presence
+cadeiafria:devices
+PS D:\Projetos\academicos\ifmg-iot\gateway> docker exec redis redis-cli HGETALL cadeiafria:device:esp32cadeiafria:state
+armed
+true
+alarmConfirmedAt
+1791821502431
+lastRequestId
+startup
+temperature
+19.69
+sensorOk
+true
+ledOn
+true
+sequence
+1
+uptimeMs
+31527
+wifiRssi
+-64
+lastTelemetryAt
+1791821528404
+lastTelemetryIso
+2026-10-12T16:12:08.404Z
+lastTopic
+ifmg/iot3/2026-1/rodolfo/esp32cadeiafria/telemetry
+ledConfirmedAt
+1791821148926
+PS D:\Projetos\academicos\ifmg-iot\gateway> docker exec redis redis-cli ZCARD cadeiafria:device:esp32cadeiafria:telemetry
+130
+
+# =====================================================================
+# 7. Consulta por janela de tempo (ZRANGEBYSCORE)
+# =====================================================================
+PS D:\Projetos\academicos\ifmg-iot\gateway> npm run query -- window esp32cadeiafria 15
+
+> cadeiafria-gateway@1.0.0 query
+> node query.js window esp32cadeiafria 15
+
+53 leituras nos últimos 15 min | min=4.31 max=19.88 média=11.11 °C

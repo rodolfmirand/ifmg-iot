@@ -26,10 +26,16 @@ async function connect() {
   return client;
 }
 
-// Qualquer mensagem válida do dispositivo conta como "contato"
+// Qualquer mensagem válida do dispositivo conta como "contato".
+// Se ele está publicando, está online: isso corrige um "offline" atrasado
+// (LWT de uma sessão MQTT antiga que expirou depois da reconexão).
 function touchPresence(multi, id, now) {
   multi.sAdd(K.devices(), id);
-  multi.hSet(K.presence(id), { lastSeen: String(now), lastSeenIso: new Date(now).toISOString() });
+  multi.hSet(K.presence(id), {
+    status: 'online',
+    lastSeen: String(now),
+    lastSeenIso: new Date(now).toISOString(),
+  });
   multi.set(K.alive(id), String(now), { EX: cfg.presence.ttlSeconds });
 }
 
