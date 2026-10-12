@@ -1,0 +1,96 @@
+$ node query.js devices
+[ 'esp32cadeiafria' ]
+
+$ node query.js state esp32cadeiafria
+{
+  "deviceId": "esp32cadeiafria",
+  "state": {
+    "temperature": "9.1",
+    "sensorOk": "true",
+    "armed": "false",
+    "ledOn": "false",
+    "sequence": "5",
+    "uptimeMs": "90174",
+    "wifiRssi": "-55",
+    "lastTelemetryAt": "1791817305770",
+    "lastTelemetryIso": "2026-10-12T15:01:45.770Z",
+    "lastTopic": "ifmg/iot3/2026-1/rodolfo/esp32cadeiafria/telemetry",
+    "alarmConfirmedAt": "1791817305165",
+    "lastRequestId": "sim-01"
+  },
+  "presence": {
+    "status": "online",
+    "statusChangedAt": "1791817304254",
+    "statusChangedIso": "2026-10-12T15:01:44.254Z",
+    "lastSeen": "1791817305770",
+    "lastSeenIso": "2026-10-12T15:01:45.770Z",
+    "heartbeatTtl": 45,
+    "reachable": true
+  }
+}
+
+$ node query.js history esp32cadeiafria 10
+Total armazenado: 6 | exibindo 6
+┌─────────┬────────────────────────┬─────┬───────┬───────┬───────┬──────┐
+│ (index) │ recebido               │ seq │ tempC │ armed │ ledOn │ rssi │
+├─────────┼────────────────────────┼─────┼───────┼───────┼───────┼──────┤
+│ 0       │ '12/10/2026, 12:01:44' │ 0   │ null  │ true  │ false │ -55  │
+│ 1       │ '12/10/2026, 12:01:44' │ 1   │ 20.88 │ true  │ true  │ -55  │
+│ 2       │ '12/10/2026, 12:01:44' │ 2   │ 20.94 │ true  │ true  │ -55  │
+│ 3       │ '12/10/2026, 12:01:45' │ 3   │ 7.5   │ true  │ false │ -55  │
+│ 4       │ '12/10/2026, 12:01:45' │ 4   │ 5.2   │ false │ false │ -55  │
+│ 5       │ '12/10/2026, 12:01:45' │ 5   │ 9.1   │ false │ false │ -55  │
+└─────────┴────────────────────────┴─────┴───────┴───────┴───────┴──────┘
+
+$ node query.js window esp32cadeiafria 5
+6 leituras nos últimos 5 min | min=5.2 max=20.94 média=12.72 °C
+
+$ node query.js commands esp32cadeiafria
+[
+  {
+    "kind": "state",
+    "deviceId": "esp32cadeiafria",
+    "actuator": "alarm",
+    "state": false,
+    "requestId": "sim-01",
+    "receivedAt": 1791817305165
+  },
+  {
+    "kind": "command",
+    "action": "set",
+    "target": "alarm",
+    "value": false,
+    "requestId": "sim-01",
+    "receivedAt": 1791817305162
+  }
+]
+
+$ node query.js invalid 2
+[
+  {
+    "at": 1791817306075,
+    "topic": "ifmg/iot3/2026-1/rodolfo/esp32cadeiafria/availability",
+    "payload": "talvez",
+    "errors": [
+      "availability inválido: \"talvez\""
+    ]
+  },
+  {
+    "at": 1791817306074,
+    "topic": "ifmg/iot3/2026-1/rodolfo/esp32cadeiafria/telemetry",
+    "payload": "{\"deviceId\":\"outro-device\",\"sensor\":\"temperatura\",\"value\":4,\"unit\":\"C\",\"sequence\":1,\"uptimeMs\":1,\"armed\":true,\"ledOn\":false}",
+    "errors": [
+      "deviceId do payload (outro-device) difere do tópico (esp32cadeiafria)"
+    ]
+  }
+]
+
+$ redis-cli --scan --pattern "cadeiafria:*"
+cadeiafria:device:esp32cadeiafria:alive
+cadeiafria:device:esp32cadeiafria:commands
+cadeiafria:device:esp32cadeiafria:presence
+cadeiafria:device:esp32cadeiafria:state
+cadeiafria:device:esp32cadeiafria:telemetry
+cadeiafria:devices
+cadeiafria:log:invalid
+cadeiafria:log:valid

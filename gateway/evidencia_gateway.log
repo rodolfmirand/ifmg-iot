@@ -1,0 +1,19 @@
+2026-10-12T15:01:42.826Z [redis] conectado em redis://127.0.0.1:6379
+2026-10-12T15:01:42.914Z [mqtt] conectado em mqtt://localhost:1883 como gw-cadeiafria-6cd8d3
+2026-10-12T15:01:42.932Z [mqtt] assinado: ifmg/iot3/2026-1/rodolfo/+/#
+2026-10-12T15:01:44.257Z [OK] esp32cadeiafria availability=online
+2026-10-12T15:01:44.259Z [OK] esp32cadeiafria telemetry seq=0 T=null°C armed=true led=false
+2026-10-12T15:01:44.556Z [OK] esp32cadeiafria telemetry seq=1 T=20.88°C armed=true led=true
+2026-10-12T15:01:44.858Z [OK] esp32cadeiafria telemetry seq=2 T=20.94°C armed=true led=true
+2026-10-12T15:01:45.161Z [OK] esp32cadeiafria telemetry seq=3 T=7.5°C armed=true led=false
+2026-10-12T15:01:45.164Z [OK] esp32cadeiafria command alarm=false req=sim-01
+2026-10-12T15:01:45.165Z [OK] esp32cadeiafria state alarm=false req=sim-01
+2026-10-12T15:01:45.467Z [OK] esp32cadeiafria telemetry seq=4 T=5.2°C armed=false led=false
+2026-10-12T15:01:45.771Z [OK] esp32cadeiafria telemetry seq=5 T=9.1°C armed=false led=false
+2026-10-12T15:01:46.072Z [INVÁLIDA] ifmg/iot3/2026-1/rodolfo/esp32cadeiafria/telemetry → JSON malformado: Expected double-quoted property name in JSON at position 31 (line 1 column 32) | payload={"deviceId":"esp32cadeiafria", value: 5
+2026-10-12T15:01:46.073Z [INVÁLIDA] ifmg/iot3/2026-1/rodolfo/esp32cadeiafria/telemetry → value deve ser número ou null | payload={"deviceId":"esp32cadeiafria","sensor":"temperatura","value":"quente","unit":"C","sequence":99,"uptimeMs":1,"armed":true,"ledOn":false}
+2026-10-12T15:01:46.074Z [INVÁLIDA] ifmg/iot3/2026-1/rodolfo/esp32cadeiafria/telemetry → deviceId do payload (outro-device) difere do tópico (esp32cadeiafria) | payload={"deviceId":"outro-device","sensor":"temperatura","value":4,"unit":"C","sequence":1,"uptimeMs":1,"armed":true,"ledOn":false}
+2026-10-12T15:01:46.075Z [INVÁLIDA] ifmg/iot3/2026-1/rodolfo/esp32cadeiafria/availability → availability inválido: "talvez" | payload=talvez
+
+2026-10-12T15:01:47.397Z encerrando — válidas=9 inválidas=4 errosRedis=0
+2026-10-12T15:01:47.401Z [mqtt] conexão fechada
