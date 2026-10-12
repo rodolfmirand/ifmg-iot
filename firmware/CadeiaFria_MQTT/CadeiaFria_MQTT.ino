@@ -35,8 +35,8 @@ const uint16_t MQTT_PORT = 1883;
 const uint8_t PIN_DS18B20 = 19;
 const uint8_t PIN_LED     = 4;
 
-const float TEMP_MIN_C = 2.0f;   // faixa segura da cadeia fria
-const float TEMP_MAX_C = 8.0f;
+const float TEMP_MIN_C = 0.0f;   // faixa segura da cadeia fria
+const float TEMP_MAX_C = 10.0f;
 
 const unsigned long TELEMETRY_INTERVAL_MS = 15000;
 const unsigned long CONVERSION_MS         = 750;   // DS18B20 em 12 bits
